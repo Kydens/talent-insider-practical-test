@@ -22,7 +22,7 @@ const getMulterStorage = (baseDir = '') => {
 
       const dir = path.join(
         __dirname,
-        '../../public/uploads',
+        `../../public/uploads/${targetDir}`,
         baseDir,
         year.toString(),
         month,
