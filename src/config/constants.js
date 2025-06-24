@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const constants = {
   PORT: process.env.PORT,
+  URL_API: process.env.URL_API,
   USER_DB: process.env.USER_DB,
   HOST_DB: process.env.HOST_DB,
   PORT_DB: process.env.PORT_DB,

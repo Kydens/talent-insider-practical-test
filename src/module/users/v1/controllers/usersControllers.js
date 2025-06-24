@@ -106,8 +106,7 @@ const getUserById = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const user = await updateUserService(req.params.id, req);
-    const result = await getJsonRowUserService(user);
+    const result = await updateUserService(req.params.id, req);
 
     return sendResponse(
       res,

@@ -6,6 +6,7 @@ const constants = require('../../../../config/constants');
 const {
   convertArrayToSingleJson,
   getFormattedDate,
+  isEmptyFile,
 } = require('../../../../utils/utils');
 const {
   insertTransaction,
@@ -69,7 +70,7 @@ const getUsersService = async (
   endDate = null
 ) => {
   let query = `
-        SELECT * FROM users
+        SELECT id, first_name, last_name, email, "isActive", role, about, photo, created_at FROM users
     `;
   const values = [];
 
@@ -102,12 +103,12 @@ const getUsersCountService = async (
   endDate = null
 ) => {
   let query = `
-        SELECT COUNT(*) FROM users
+        SELECT COUNT(id) FROM users
     `;
   const values = [];
 
   if (search) {
-    query += ` AND (name ILIKE $${values.length + 1} OR email ILIKE $${
+    query += ` AND (first_name ILIKE $${values.length + 1} OR email ILIKE $${
       values.length + 1
     })`;
     values.push(`%${search}%`);
@@ -126,7 +127,7 @@ const getUsersCountService = async (
 
 const getTotalUsersService = async () => {
   const query = `
-        SELECT COUNT(*) FROM users
+        SELECT COUNT(id) FROM users
     `;
   const { rows } = await pool.query(query);
   return parseInt(rows[0].count, 10);
@@ -143,6 +144,7 @@ const getUserByIdService = async (id) => {
 const updateUserService = async (id, req) => {
   const now = new Date();
   const row = req.body;
+  console.log(row);
 
   try {
     const user = await getUserByIdService(id);
@@ -150,8 +152,16 @@ const updateUserService = async (id, req) => {
       throw new Error('User tidak ada!');
     }
 
-    let hashNewPassword = null;
+    const data = {
+      first_name: row.firstName,
+      last_name: row.lastName,
+      email: row.email,
+      about: row.about,
+      updated_at: now,
+    };
+
     if (row.password) {
+      let hashNewPassword = null;
       if (row.password.length < 8) {
         throw new Error('Password minimal 8 karakter!');
       }
@@ -160,19 +170,23 @@ const updateUserService = async (id, req) => {
         row.password,
         parseInt(constants.SALT_ROUNDS)
       );
+
+      data.password = hashNewPassword;
     }
 
-    const data = {
-      first_name: row.firstName,
-      last_name: row.lastName,
-      email: row.email,
-      password: hashNewPassword,
-      isActive: row.isActive,
-      role: row.role,
-      about: row.about,
-      // photo: row.photo,
-      created_at: now,
-    };
+    if (req.files) {
+      if (req.files.photo) {
+        data.photo = `/uploads/avatars/${getFormattedDate('/')}/${
+          req.files.photo[0].filename
+        }`;
+      }
+
+      // if (req.files.resumes) {
+      //   data.photo = `/uploads/avatars/${getFormattedDate('/')}/${
+      //     req.files.photo[0].filename
+      //   }`;
+      // }
+    }
 
     await User.update(data, { where: { id: user.id } });
     return await getUserByIdService(user.id);
@@ -199,7 +213,7 @@ const getJsonRowUserService = async (data) => {
     isActive: row.isActive,
     role: row.role,
     about: row.about,
-    // photo: row.photo,
+    photo: isEmptyFile(row.photo),
     createdAt: row.created_at,
   }));
 
