@@ -74,16 +74,22 @@ const getUsersService = async (
   const values = [];
 
   if (search) {
-    query += ` AND (first_name ILIKE $${values.length + 1} OR email ILIKE $${values.length + 1})`;
+    query += ` AND (first_name ILIKE $${values.length + 1} OR email ILIKE $${
+      values.length + 1
+    })`;
     values.push(`%${search}%`);
   }
 
   if (startDate && endDate) {
-    query += ` AND created_at BETWEEN $${values.length + 1} AND $${values.length + 2}`;
+    query += ` AND created_at BETWEEN $${values.length + 1} AND $${
+      values.length + 2
+    }`;
     values.push(startDate, endDate);
   }
 
-  query += ` ORDER BY ${sortBy} ${sortOrder} LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+  query += ` ORDER BY ${sortBy} ${sortOrder} LIMIT $${
+    values.length + 1
+  } OFFSET $${values.length + 2}`;
   values.push(size, offset);
 
   const { rows } = await pool.query(query, values);
@@ -101,12 +107,16 @@ const getUsersCountService = async (
   const values = [];
 
   if (search) {
-    query += ` AND (name ILIKE $${values.length + 1} OR email ILIKE $${values.length + 1})`;
+    query += ` AND (name ILIKE $${values.length + 1} OR email ILIKE $${
+      values.length + 1
+    })`;
     values.push(`%${search}%`);
   }
 
   if (startDate && endDate) {
-    query += ` AND created_at BETWEEN $${values.length + 1} AND $${values.length + 2}`;
+    query += ` AND created_at BETWEEN $${values.length + 1} AND $${
+      values.length + 2
+    }`;
     values.push(startDate, endDate);
   }
 
@@ -170,9 +180,6 @@ const updateUserService = async (id, req) => {
     console.log('error in create user service: ', error.message);
     throw error;
   }
-
-  await user.update(data);
-  return user;
 };
 
 const deleteUserService = async (id) => {

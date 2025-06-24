@@ -1,8 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const constants = require('../../../../config/constants');
-const { sendResponse } = require('../../../../utils/responseUtils');
 const User = require('../models/users');
+const UserCookies = require('../models/usersCookies');
+const UserLogs = require('../models/usersLogs');
+const { sendResponse } = require('../../../../utils/responseUtils');
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -63,6 +65,22 @@ exports.login = async (req, res) => {
     const refreshTokenExpiresAt = new Date(
       Date.now() + 7 * 24 * 60 * 60 * 1000
     ); // 7 hari
+
+    res.cookie('users_cookies', refreshToken, { httpOnly: true, secure: true });
+
+    await UserCookies.createUserCookie(
+      user.id,
+      accessToken,
+      refreshToken,
+      refreshTokenExpiresAt
+    );
+
+    await UserLogs.createUserLogs(
+      user.id,
+      user.email,
+      'login',
+      'Pengguna telah berhasil login'
+    );
 
     return sendResponse(res, 200, 'success', 'Login berhasil', {
       id: user.id,

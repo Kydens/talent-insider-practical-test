@@ -11,6 +11,7 @@ const {
   deleteUserService,
 } = require('../services/usersServices');
 const { sendResponse } = require('../../../../utils/responseUtils');
+const { checkRoleAdminPermission } = require('../../../../utils/utils');
 
 const createUser = async (req, res) => {
   try {
@@ -29,6 +30,10 @@ const createUser = async (req, res) => {
 };
 
 const getAllUsers = async (req, res) => {
+  if (!checkRoleAdminPermission(req)) {
+    return sendResponse(res, 403, 'error', 'Anda tidak memiliki akses ini!');
+  }
+
   try {
     // Ambil parameter dari query string
     const {
@@ -80,6 +85,10 @@ const getAllUsers = async (req, res) => {
 };
 
 const getUserById = async (req, res) => {
+  if (!checkRoleAdminPermission(req)) {
+    return sendResponse(res, 403, 'error', 'Anda tidak memiliki akses ini!');
+  }
+
   try {
     const user = await getUserByIdService(req.params.id);
     const result = await getJsonRowUserService(user);
@@ -115,7 +124,9 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const user = await deleteUserService(req.params.id);
-    return sendResponse(res, 200, 'success', 'user deleted successfully', user);
+    return sendResponse(res, 200, 'success', 'user deleted successfully', {
+      user_id: user,
+    });
   } catch (error) {
     return sendResponse(res, 400, 'error', error.message);
   }

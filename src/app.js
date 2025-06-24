@@ -24,6 +24,8 @@ app.get('/', (req, res) => {
   });
 });
 
+const UserLogs = require('./module/users/v1/models/usersLogs')
+
 const syncDatabase = async () => {
   try {
     await sequelize.sync();

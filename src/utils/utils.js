@@ -17,28 +17,21 @@ const convertArrayToSingleJson = (dataArray) => {
   return dataArray[0];
 };
 
-const getUserIdFromToken = (req) => {
-  const authHeader = req.headers['authorization'];
-
-  if (!authHeader) throw new Error('Authorization header is missing!');
-
-  // ambil token setelah bearer
-  const token = authHeader.split(' ')[1];
-
-  if (!token) throw new Error('Token is missing!');
-
-  try {
-    const decodedUser = jwt.verify(token, constants.JWT_SECRET);
-
-    return decodedUser.id;
-  } catch (error) {
-    throw new Error('Invalid or expired token');
+const checkRoleAdminPermission = (req) => {
+  if (!req.user) {
+    throw new Error('User data not found in request!');
   }
+
+  if (req.user.role == 'Admin') {
+    return true;
+  }
+
+  return false;
 };
 
 module.exports = {
   isNotEmpty,
   isEmptyString,
   convertArrayToSingleJson,
-  getUserIdFromToken,
+  checkRoleAdminPermission,
 };
