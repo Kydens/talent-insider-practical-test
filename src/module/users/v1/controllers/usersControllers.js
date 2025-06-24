@@ -1,14 +1,14 @@
 // usersController.js
 const {
   createUserService,
-  getAllUsersService,
   getUsersService,
-  getUsersCountService,
   getTotalUsersService,
   getUserByIdService,
   getJsonRowUserService,
   updateUserService,
   deleteUserService,
+  getDataResumeByIdUserService,
+  getTotalDataResumeByIdUserService,
 } = require('../services/usersServices');
 const { sendResponse } = require('../../../../utils/responseUtils');
 const { checkRoleAdminPermission } = require('../../../../utils/utils');
@@ -26,6 +26,21 @@ const createUser = async (req, res) => {
     );
   } catch (error) {
     return sendResponse(res, 400, 'error', error.message);
+  }
+};
+
+const getAllResumeByIdUser = async (req, res) => {
+  try {
+    const result = await getDataResumeByIdUserService(req.params.id);
+    return sendResponse(
+      res,
+      200,
+      'success',
+      'Resume retrieved successfully',
+      result
+    );
+  } catch (error) {
+    return sendResponse(res, 404, 'error', error.message);
   }
 };
 
@@ -58,11 +73,9 @@ const getAllUsers = async (req, res) => {
       endDate
     );
     const totalCount = await getTotalUsersService();
-    const totalFilter = await getUsersCountService(search, startDate, endDate);
     const totalPages = Math.ceil(totalCount / size);
 
     const result = await getJsonRowUserService(user);
-    // const result = await getAllUsersService();
 
     return sendResponse(res, 200, 'success', 'User data successfully', {
       data: result,
@@ -134,6 +147,7 @@ const deleteUser = async (req, res) => {
 module.exports = {
   createUser,
   getAllUsers,
+  getAllResumeByIdUser,
   getUserById,
   updateUser,
   deleteUser,

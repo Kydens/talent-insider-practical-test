@@ -6,6 +6,7 @@ const {
   getUserById,
   updateUser,
   deleteUser,
+  getAllResumeByIdUser,
 } = require('../controllers/usersControllers');
 const { usersValidation } = require('../validations/usersValidations');
 const upload = require('../../../../utils/uploadFilesUtils');
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.post('/', usersValidation, createUser);
 router.get('/', getAllUsers);
+router.get('/:id/resume', getAllResumeByIdUser);
 router.get('/:id', getUserById);
 router.put(
   '/:id',

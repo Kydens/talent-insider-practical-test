@@ -19,6 +19,7 @@ const getMulterStorage = (baseDir = '') => {
       let targetDir = 'others';
       if (file.fieldname === 'photo') targetDir = 'photo';
       if (file.fieldname === 'resumes') targetDir = 'pdf';
+      if (file.fieldname === 'attachments') targetDir = 'pdf';
 
       const dir = path.join(
         __dirname,

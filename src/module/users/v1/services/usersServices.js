@@ -1,6 +1,6 @@
 // usersService.js
 const bcyrpt = require('bcrypt');
-const User = require('../models/users');
+const { Users, Resumes } = require('../models');
 const pool = require('../../../../config/database');
 const constants = require('../../../../config/constants');
 const {
@@ -18,7 +18,7 @@ const createUserService = async (req) => {
   const row = req.body;
 
   try {
-    const userExisted = await User.findOne({ where: { email: row.email } });
+    const userExisted = await Users.findOne({ where: { email: row.email } });
     if (userExisted) {
       throw new Error('Email sudah terpakai!');
     }
@@ -35,28 +35,89 @@ const createUserService = async (req) => {
       );
     }
 
-    const data = {
+    const dataUser = {
       first_name: row.firstName,
       last_name: row.lastName,
       email: row.email,
       password: hashPassword,
       isActive: row.isActive,
       role: row.role,
-      about: row.about,
-      // photo: row.photo,
+      about: row.about ?? null,
       created_at: now,
     };
 
-    const user = await User.create(data);
-    return user;
+    if (req.files && req.files.photo) {
+      dataUser.photo = `/uploads/avatars/${getFormattedDate('/')}/${
+        req.files.photo[0].filename
+      }`;
+    }
+
+    const user = await Users.create(dataUser);
+    const rowUser = await getUserByIdService(user.id);
+
+    const resumeInserted = req.files.resumes;
+    if (req.files && resumeInserted) {
+      const dataResume = resumeInserted.map((file) => ({
+        name: file.filename,
+        attachment: req.files.attachment?.[0]?.filename ?? null,
+        user_id: rowUser.id,
+        created_at: now,
+      }));
+
+      const inserted = await Resumes.bulkCreate(dataResume);
+
+      if (!inserted || inserted.length === 0) {
+        throw new Error('Gagal menambahkan resume');
+      }
+    }
+
+    return rowUser;
   } catch (error) {
     console.log('error in create user service: ', error.message);
     throw error;
   }
 };
 
+const getDataResumeByIdUserService = async (id) => {
+  const query = `
+    SELECT
+      u.id, 
+      u.first_name AS "firstName",
+      u.last_name AS "lastName",
+      u.email AS email,
+      json_agg(
+        json_build_object(
+          'id', r.id,
+          'name',
+            CASE 
+              WHEN r.name IS NOT NULL AND r.name != '' 
+                THEN CONCAT('${constants.URL_API}', r.name)
+              ELSE NULL
+            END,
+          'attachment',
+            CASE 
+              WHEN r.attachment IS NOT NULL AND r.attachment != '' 
+                THEN CONCAT('${constants.URL_API}', r.attachment)
+              ELSE NULL
+            END,
+          'createdAt', r.created_at,
+          'updatedAt', r.updated_at
+        )
+        ORDER BY r.created_at DESC
+      ) AS resumes
+    FROM users u
+    LEFT JOIN resumes r ON r.user_id = u.id
+    WHERE u."isActive" = true AND u.id = $1
+    GROUP BY u.id, u.first_name, u.last_name, u.email
+  `;
+
+  const values = [id];
+  const { rows } = await pool.query(query, values);
+  return rows[0];
+};
+
 const getAllUsersService = async () => {
-  const user = await User.findAll();
+  const user = await Users.findAll();
   return user;
 };
 
@@ -97,34 +158,6 @@ const getUsersService = async (
   return rows;
 };
 
-const getUsersCountService = async (
-  search,
-  startDate = null,
-  endDate = null
-) => {
-  let query = `
-        SELECT COUNT(id) FROM users
-    `;
-  const values = [];
-
-  if (search) {
-    query += ` AND (first_name ILIKE $${values.length + 1} OR email ILIKE $${
-      values.length + 1
-    })`;
-    values.push(`%${search}%`);
-  }
-
-  if (startDate && endDate) {
-    query += ` AND created_at BETWEEN $${values.length + 1} AND $${
-      values.length + 2
-    }`;
-    values.push(startDate, endDate);
-  }
-
-  const { rows } = await pool.query(query, values);
-  return parseInt(rows[0].count, 10);
-};
-
 const getTotalUsersService = async () => {
   const query = `
         SELECT COUNT(id) FROM users
@@ -134,7 +167,7 @@ const getTotalUsersService = async () => {
 };
 
 const getUserByIdService = async (id) => {
-  const user = await User.findByPk(id);
+  const user = await Users.findByPk(id);
   if (!user) {
     throw new Error('User not found');
   }
@@ -152,7 +185,7 @@ const updateUserService = async (id, req) => {
       throw new Error('User tidak ada!');
     }
 
-    const data = {
+    const dataUser = {
       first_name: row.firstName,
       last_name: row.lastName,
       email: row.email,
@@ -171,25 +204,35 @@ const updateUserService = async (id, req) => {
         parseInt(constants.SALT_ROUNDS)
       );
 
-      data.password = hashNewPassword;
+      dataUser.password = hashNewPassword;
     }
 
-    if (req.files) {
-      if (req.files.photo) {
-        data.photo = `/uploads/avatars/${getFormattedDate('/')}/${
-          req.files.photo[0].filename
-        }`;
+    if (req.files && req.files.photo) {
+      dataUser.photo = `/uploads/avatars/${getFormattedDate('/')}/${
+        req.files.photo[0].filename
+      }`;
+    }
+
+    await Users.update(dataUser, { where: { id: user.id } });
+    const rowUser = await getUserByIdService(user.id);
+
+    const resumeInserted = req.files.resumes;
+    if (req.files && resumeInserted) {
+      const dataResume = resumeInserted.map((file) => ({
+        name: file.filename,
+        attachment: req.files.attachment?.[0]?.filename ?? null,
+        user_id: rowUser.id,
+        created_at: now,
+      }));
+
+      const inserted = await Resumes.bulkCreate(dataResume);
+
+      if (!inserted || inserted.length === 0) {
+        throw new Error('Gagal menambahkan resume');
       }
-
-      // if (req.files.resumes) {
-      //   data.photo = `/uploads/avatars/${getFormattedDate('/')}/${
-      //     req.files.photo[0].filename
-      //   }`;
-      // }
     }
 
-    await User.update(data, { where: { id: user.id } });
-    return await getUserByIdService(user.id);
+    return rowUser;
   } catch (error) {
     console.log('error in create user service: ', error.message);
     throw error;
@@ -198,7 +241,7 @@ const updateUserService = async (id, req) => {
 
 const deleteUserService = async (id) => {
   const user = await getUserByIdService(id);
-  return await User.destroy({ where: { id: user.id } });
+  return await Users.destroy({ where: { id: user.id } });
 };
 
 const getJsonRowUserService = async (data) => {
@@ -226,12 +269,12 @@ const getJsonRowUserService = async (data) => {
 
 module.exports = {
   createUserService,
+  getDataResumeByIdUserService,
   getAllUsersService,
   getUserByIdService,
   updateUserService,
   deleteUserService,
   getUsersService,
-  getUsersCountService,
   getTotalUsersService,
   getJsonRowUserService,
 };
