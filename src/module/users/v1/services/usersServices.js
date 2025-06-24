@@ -1,6 +1,6 @@
 // usersService.js
 const bcyrpt = require('bcrypt');
-const { Users, Resumes } = require('../models');
+const { Users, Resumes, UserLogs, UserActivation } = require('../models');
 const pool = require('../../../../config/database');
 const constants = require('../../../../config/constants');
 const {
@@ -12,6 +12,54 @@ const {
   insertTransaction,
   updateTransaction,
 } = require('../../../../utils/crudUtils');
+const {
+  getActivationEmailHtml,
+  sendEmail,
+} = require('../../../../utils/sendEmailUtils');
+
+const sendActivationService = async (email) => {
+  const now = new Date();
+  const expiresAt = new Date(Date.now() + 60 * 1000); // 1 menit saja
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashOtp = await bcyrpt.hash(otpCode, 10);
+
+  try {
+    const user = await Users.findOne({ where: { email: email } });
+
+    if (user.isActive === true) {
+      throw new Error('Akun anda sudah aktif!');
+    }
+
+    const html = getActivationEmailHtml(user.first_name, otpCode);
+
+    const dataActivation = {
+      user_id: user.id,
+      otpCode: hashOtp,
+      status: 'Active',
+      expired_at: expiresAt,
+      last_send_at: now,
+    };
+
+    const dataLogs = {
+      created_at: new Date(),
+      user_id: user.id,
+      email: email,
+      status_logs: 'activation_account',
+      description: 'Permintaan activation',
+    };
+
+    const [rowActivation, rowLogs, sendedEmail] = await Promise.all([
+      UserActivation.create(dataActivation),
+      UserLogs.create(dataLogs),
+      sendEmail(email, 'Aktivasi Akun Anda', 'Aktivasi Akun', html),
+    ]);
+
+    return sendedEmail;
+  } catch (error) {
+    console.log('error in send activation user service: ', error.message);
+    throw error;
+  }
+};
 
 const createUserService = async (req) => {
   const now = new Date();
@@ -46,6 +94,8 @@ const createUserService = async (req) => {
       created_at: now,
     };
 
+    console.log(hashPassword);
+
     if (req.files && req.files.photo) {
       dataUser.photo = `/uploads/avatars/${getFormattedDate('/')}/${
         req.files.photo[0].filename
@@ -68,6 +118,14 @@ const createUserService = async (req) => {
 
       if (!inserted || inserted.length === 0) {
         throw new Error('Gagal menambahkan resume');
+      }
+    }
+
+    if (!rowUser.isActive) {
+      const sendedEmail = await sendActivationService(rowUser.email);
+
+      if (!sendedEmail) {
+        throw new Error('Gagal mengirim email');
       }
     }
 
@@ -268,8 +326,9 @@ const getJsonRowUserService = async (data) => {
 };
 
 module.exports = {
-  createUserService,
   getDataResumeByIdUserService,
+  sendActivationService,
+  createUserService,
   getAllUsersService,
   getUserByIdService,
   updateUserService,

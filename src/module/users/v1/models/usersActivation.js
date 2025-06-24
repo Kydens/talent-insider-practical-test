@@ -1,23 +1,15 @@
-// resumes.js
-const { DataTypes } = require('sequelize');
+// userActivation.js
+const { DataTypes, ENUM } = require('sequelize');
 const sequelize = require('../../../../config/sequelize');
 const { now } = require('sequelize/lib/utils');
 
-const Resumes = sequelize.define(
-  'resumes',
+const userActivation = sequelize.define(
+  'userActivation',
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    attachment: {
-      type: DataTypes.STRING,
-      allowNull: true,
     },
     user_id: {
       type: DataTypes.INTEGER,
@@ -29,20 +21,28 @@ const Resumes = sequelize.define(
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
     },
-    created_at: {
+    otpCode: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM('Active', 'Used', 'Expired'),
+      allowNull: false,
+      defaultValue: 'Active',
+    },
+    expired_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: now,
     },
-    updated_at: {
+    last_send_at: {
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: false,
     },
   },
   {
-    tableName: 'resumes',
+    tableName: 'userActivation',
     timestamps: false,
   }
 );
 
-module.exports = Resumes;
+module.exports = userActivation;

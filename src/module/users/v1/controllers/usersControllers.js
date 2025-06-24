@@ -8,10 +8,28 @@ const {
   updateUserService,
   deleteUserService,
   getDataResumeByIdUserService,
-  getTotalDataResumeByIdUserService,
+  sendActivationService,
+  getUserByEmailService,
 } = require('../services/usersServices');
 const { sendResponse } = require('../../../../utils/responseUtils');
 const { checkRoleAdminPermission } = require('../../../../utils/utils');
+
+const resendActivation = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const result = await sendActivationService(email);
+    return sendResponse(
+      res,
+      200,
+      'success',
+      'Resend OTP retrieved successfully',
+      result
+    );
+  } catch (error) {
+    return sendResponse(res, 404, 'error', error.message);
+  }
+};
 
 const createUser = async (req, res) => {
   try {
@@ -36,7 +54,7 @@ const getAllResumeByIdUser = async (req, res) => {
       res,
       200,
       'success',
-      'Resume retrieved successfully',
+      'Resumes retrieved successfully',
       result
     );
   } catch (error) {
@@ -145,6 +163,7 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
+  resendActivation,
   createUser,
   getAllUsers,
   getAllResumeByIdUser,

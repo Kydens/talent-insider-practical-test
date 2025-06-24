@@ -12,6 +12,8 @@ const constants = {
   JWT_TIME_DEFAULT: process.env.JWT_TIME_DEFAULT,
   JWT_REFRESH_TIME: process.env.JWT_REFRESH_TIME,
   SALT_ROUNDS: process.env.SALT_ROUNDS,
+  emailGmail: process.env.emailGmail,
+  passwordGmail: process.env.passwordGmail,
 };
 
 module.exports = constants;
