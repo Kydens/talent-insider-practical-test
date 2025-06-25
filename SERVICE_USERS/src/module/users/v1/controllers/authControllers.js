@@ -66,7 +66,10 @@ exports.login = async (req, res) => {
       Date.now() + 7 * 24 * 60 * 60 * 1000
     ); // 7 hari
 
-    res.cookie('users_cookies', refreshToken, { httpOnly: true });
+    res.cookie('users_cookies', refreshToken, {
+      httpOnly: true,
+      secure: false,
+    });
 
     await UserCookies.createUserCookie(
       user.id,

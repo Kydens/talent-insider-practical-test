@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(
   "/v1/auth",
   createProxyMiddleware({
-    target: "http://127.0.0.1:5000/v1/auth",
+    target: "http://127.0.0.1:5000",
     changeOrigin: true,
   })
 );
