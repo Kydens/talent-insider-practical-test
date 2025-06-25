@@ -75,7 +75,7 @@ const acceptActivationService = async (email, otpCode) => {
     });
 
     if (!activationLog) {
-      throw new Error('Kode OTP tidak ditemukan');
+      throw new Error('Kode OTP sudah terpakai atau kadaluwarsa');
     }
 
     // jika used
@@ -157,13 +157,11 @@ const createUserService = async (req) => {
       last_name: row.lastName,
       email: row.email,
       password: hashPassword,
-      isActive: row.isActive,
       role: row.role,
       about: row.about ?? null,
+      photo: '/uploads/dummy-avatar.jpg',
       created_at: now,
     };
-
-    console.log(hashPassword);
 
     if (req.files && req.files.photo) {
       dataUser.photo = `/uploads/avatars/${getFormattedDate('/')}/${

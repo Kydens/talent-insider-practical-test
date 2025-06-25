@@ -22,7 +22,7 @@ const userActivation = sequelize.define(
       onUpdate: 'CASCADE',
     },
     otpCode: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: true,
     },
     status: {

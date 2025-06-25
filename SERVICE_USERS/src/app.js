@@ -24,11 +24,11 @@ app.get('/', (req, res) => {
   });
 });
 
-// require('./module/users/v1/models/usersLogs')
-// require('./module/users/v1/models/resumes');
-// require('./module/users/v1/models/usersCookies')
-// require('./module/users/v1/models/users')
-// require('./module/users/v1/models/usersActivation');
+require('./module/users/v1/models/usersLogs');
+require('./module/users/v1/models/resumes');
+require('./module/users/v1/models/usersCookies');
+require('./module/users/v1/models/users');
+require('./module/users/v1/models/usersActivation');
 
 const syncDatabase = async () => {
   try {
