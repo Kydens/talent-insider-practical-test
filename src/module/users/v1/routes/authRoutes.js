@@ -4,11 +4,14 @@ const router = express.Router();
 const authController = require('../controllers/authControllers');
 const {
   createUser,
-  resendActivation,
+  sendActivation,
+  acceptActivation,
 } = require('../controllers/usersControllers');
 const upload = require('../../../../utils/uploadFilesUtils');
 
-router.post('/resendOtp', resendActivation);
+router.post('/sendOtp', sendActivation);
+router.post('/acceptOtp', acceptActivation);
+router.post('/resendOtp', sendActivation);
 router.post(
   '/signup',
   upload().fields([

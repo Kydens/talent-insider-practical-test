@@ -9,12 +9,23 @@ const {
   deleteUserService,
   getDataResumeByIdUserService,
   sendActivationService,
-  getUserByEmailService,
+  acceptActivationService,
 } = require('../services/usersServices');
 const { sendResponse } = require('../../../../utils/responseUtils');
 const { checkRoleAdminPermission } = require('../../../../utils/utils');
 
-const resendActivation = async (req, res) => {
+const acceptActivation = async (req, res) => {
+  try {
+    const { email, otpCode } = req.body;
+
+    const result = await acceptActivationService(email, otpCode);
+    return sendResponse(res, 200, 'success', 'Activation successfully', result);
+  } catch (error) {
+    return sendResponse(res, 404, 'error', error.message);
+  }
+};
+
+const sendActivation = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -163,7 +174,8 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
-  resendActivation,
+  sendActivation,
+  acceptActivation,
   createUser,
   getAllUsers,
   getAllResumeByIdUser,

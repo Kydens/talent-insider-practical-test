@@ -16,6 +16,7 @@ const {
   getActivationEmailHtml,
   sendEmail,
 } = require('../../../../utils/sendEmailUtils');
+const { where } = require('sequelize');
 
 const sendActivationService = async (email) => {
   const now = new Date();
@@ -57,6 +58,74 @@ const sendActivationService = async (email) => {
     return sendedEmail;
   } catch (error) {
     console.log('error in send activation user service: ', error.message);
+    throw error;
+  }
+};
+
+const acceptActivationService = async (email, otpCode) => {
+  const now = new Date();
+
+  try {
+    const user = await Users.findOne({ where: { email: email } });
+
+    const activationLog = await UserActivation.findOne({
+      where: { user_id: user.id, status: 'Active' },
+      order: [['expired_at', 'DESC']],
+      limit: 1,
+    });
+
+    if (!activationLog) {
+      throw new Error('Kode OTP tidak ditemukan');
+    }
+
+    // jika used
+    if (activationLog.status == 'Used') {
+      throw new Error('Kode OTP anda sudah dipakai!');
+    }
+
+    // jika expired
+    if (now > new Date(activationLog.expired_at)) {
+      await UserActivation.update(
+        { status: 'Expired' },
+        { where: { id: activationLog.id } }
+      );
+
+      throw new Error('Kode OTP anda sudah kadaluwarsa!');
+    }
+
+    const hashedOtp = activationLog.otpCode;
+    const checkOtp = await bcyrpt.compare(otpCode, hashedOtp);
+
+    // jika kode otp salah
+    if (!checkOtp) {
+      throw new Error('Kode OTP Anda Salah!');
+    }
+
+    // jika semua benar dan aman
+    const dataLogs = {
+      created_at: new Date(),
+      user_id: user.id,
+      email: email,
+      status_logs: 'activation_sucess',
+      description: 'Activation Berhasil',
+    };
+
+    const [activationSuccess, userActivationLog, userUpdateActivation] =
+      await Promise.all([
+        UserActivation.update(
+          { status: 'Used' },
+          { where: { id: activationLog.id } }
+        ),
+        UserLogs.create(dataLogs),
+        Users.update(
+          { isActive: true },
+          { where: { id: user.id }, returning: true }
+        ),
+      ]);
+
+    return await getUserByIdService(userUpdateActivation[1][0].id);
+  } catch (error) {
+    console.log('error in accept activation user service: ', error.message);
     throw error;
   }
 };
@@ -328,6 +397,7 @@ const getJsonRowUserService = async (data) => {
 module.exports = {
   getDataResumeByIdUserService,
   sendActivationService,
+  acceptActivationService,
   createUserService,
   getAllUsersService,
   getUserByIdService,
