@@ -1,8 +1,6 @@
 // companyController.js
 const {
   createCompanyService,
-  getCompaniesService,
-  getTotalCompaniesService,
   getCompanyByIdService,
   getJsonRowCompanyService,
   updateCompanyService,
@@ -10,7 +8,6 @@ const {
   getAllCompaniesService,
 } = require('../services/companyServices');
 const { sendResponse } = require('../../../../utils/responseUtils');
-const { checkRoleAdminPermission } = require('../../../../utils/utils');
 
 const createCompany = async (req, res) => {
   try {

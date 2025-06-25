@@ -68,7 +68,7 @@ const updateCompanyService = async (id, req) => {
 
   try {
     const company = await Company.findOne({
-      where: { user_access: userId }, // salah disini
+      where: { user_access: userId },
     });
 
     if (!company) {
@@ -95,13 +95,13 @@ const updateCompanyService = async (id, req) => {
 
     return rowCompany;
   } catch (error) {
-    console.log('error in update user service: ', error.message);
+    console.log('error in update job service: ', error.message);
     throw error;
   }
 };
 
 const deleteCompanyService = async (id) => {
-  const company = await getUserByIdService(id);
+  const company = await getJobByIdService(id);
   return await Company.destroy({ where: { id: company.id } });
 };
 
