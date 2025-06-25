@@ -11,7 +11,12 @@ const { companyValidation } = require('../validations/companyValidations');
 const upload = require('../../../../utils/uploadFilesUtils');
 const router = express.Router();
 
-router.post('/', companyValidation, createCompany);
+router.post(
+  '/',
+  upload().fields([{ name: 'logo', maxCount: 1 }]),
+  companyValidation,
+  createCompany
+);
 router.get('/', getAllCompanies);
 router.get('/:id', getCompanyById);
 router.put(

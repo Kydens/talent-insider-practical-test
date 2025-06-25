@@ -7,6 +7,7 @@ const {
   getJsonRowCompanyService,
   updateCompanyService,
   deleteCompanyService,
+  getAllCompaniesService,
 } = require('../services/companyServices');
 const { sendResponse } = require('../../../../utils/responseUtils');
 const { checkRoleAdminPermission } = require('../../../../utils/utils');
@@ -29,42 +30,16 @@ const createCompany = async (req, res) => {
 
 const getAllCompanies = async (req, res) => {
   try {
-    // Ambil parameter dari query string
-    const {
-      size = 10,
-      page = 0,
-      search = '',
-      sortBy = 'created_at',
-      sortOrder = 'DESC',
-      startDate,
-      endDate,
-    } = req.query;
-    const offset = page * size;
-
-    // Ambil data {NAMEROW} dengan filter dan sorting
-    const company = await getCompaniesService(
-      size,
-      offset,
-      search,
-      sortBy,
-      sortOrder,
-      startDate,
-      endDate
-    );
-    const totalCount = await getTotalCompaniesService();
-    const totalPages = Math.ceil(totalCount / size);
-
+    const company = await getAllCompaniesService(req);
     const result = await getJsonRowCompanyService(company);
 
-    return sendResponse(res, 200, 'success', 'Company data successfully', {
-      data: result,
-      paging: {
-        currentPage: parseInt(page),
-        totalPage: parseInt(totalPages),
-        total: parseInt(totalCount),
-        size: parseInt(size, 10),
-      },
-    });
+    return sendResponse(
+      res,
+      200,
+      'success',
+      'Company data successfully',
+      result
+    );
   } catch (error) {
     return sendResponse(
       res,

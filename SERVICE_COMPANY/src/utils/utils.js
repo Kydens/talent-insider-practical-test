@@ -50,12 +50,13 @@ const checkRoleAdminPermission = (req) => {
   return false;
 };
 
-const checkCompanyAccess = (req) => {
+const checkCompanyAccess = (req, decodedUserId) => {
+  console.log(req);
   if (!req.user) {
     throw new Error('User data not found in request!');
   }
 
-  if (isNotEmpty(req.user.id)) {
+  if (isNotEmpty(req.user.id) && req.user.id == decodedUserId) {
     return true;
   }
 
@@ -63,15 +64,15 @@ const checkCompanyAccess = (req) => {
 };
 
 const getUserIdFromToken = (req) => {
-  const authHeader = req.headers['authorization'];
-
-  if (!authHeader) throw new Error('Authorization header is missing!');
-
-  const token = authHeader.split(' ')[1];
-
-  if (!token) throw new Error('Token is missing!');
-
   try {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader) throw new Error('Authorization header is missing!');
+
+    const token = authHeader.split(' ')[1];
+
+    if (!token) throw new Error('Token is missing!');
+
     const decodedUser = jwt.verify(token, constants.JWT_SECRET);
 
     return decodedUser.id;

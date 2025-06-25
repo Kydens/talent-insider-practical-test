@@ -8,6 +8,7 @@ const {
   getFormattedDate,
   isEmptyFile,
   getUserIdFromToken,
+  checkCompanyAccess,
 } = require('../../../../utils/utils');
 const {
   insertTransaction,
@@ -17,8 +18,7 @@ const {
 const createCompanyService = async (req) => {
   const userId = getUserIdFromToken(req);
   const now = new Date();
-  // const row = req.body;
-  console.log(req);
+  const row = req.body;
 
   try {
     const dataCompany = {
@@ -47,7 +47,7 @@ const createCompanyService = async (req) => {
   }
 };
 
-const getAllCompaniesService = async () => {
+const getAllCompaniesService = async (req) => {
   const userId = getUserIdFromToken(req);
   const company = await Company.findAll({ where: { user_access: userId } });
   return company;
@@ -62,73 +62,47 @@ const getCompanyByIdService = async (id) => {
 };
 
 const updateCompanyService = async (id, req) => {
+  const userId = getUserIdFromToken(req);
   const now = new Date();
   const row = req.body;
-  console.log(row);
 
   try {
-    const company = await getUserByIdService(id);
-    if (!user) {
-      throw new Error('User tidak ada!');
+    const company = await Company.findOne({
+      where: { user_access: userId }, // salah disini
+    });
+
+    if (!company) {
+      throw new Error('Anda tidak memiliki company.');
     }
 
-    const datacompany = {
-      first_name: row.firstName,
-      last_name: row.lastName,
-      email: row.email,
-      about: row.about,
+    const dataCompany = {
+      name: row.name,
+      city: row.city,
+      organization_size: row.organizationSize,
+      industry_id: row.industryId,
+      about: row.about ?? null,
       updated_at: now,
     };
 
-    if (row.password) {
-      let hashNewPassword = null;
-      if (row.password.length < 8) {
-        throw new Error('Password minimal 8 karakter!');
-      }
-
-      hashNewPassword = await bcyrpt.hash(
-        row.password,
-        parseInt(constants.SALT_ROUNDS)
-      );
-
-      dataUser.password = hashNewPassword;
-    }
-
-    if (req.files && req.files.photo) {
-      dataUser.photo = `/uploads/avatars/${getFormattedDate('/')}/${
-        req.files.photo[0].filename
+    if (req.files && req.files.logo) {
+      dataCompany.logo = `/uploads/company/${getFormattedDate('/')}/${
+        req.files.logo[0].filename
       }`;
     }
 
-    await Company.update(dataUser, { where: { id: user.id } });
-    const rowcompany = await getUserByIdService(user.id);
+    await Company.update(dataCompany, { where: { id: id } });
+    const rowCompany = await getCompanyByIdService(id);
 
-    const resumeInserted = req.files.resumes;
-    if (req.files && resumeInserted) {
-      const dataResume = resumeInserted.map((file) => ({
-        name: file.filename,
-        attachment: req.files.attachment?.[0]?.filename ?? null,
-        user_id: rowUser.id,
-        created_at: now,
-      }));
-
-      const inserted = await Resumes.bulkCreate(dataResume);
-
-      if (!inserted || inserted.length === 0) {
-        throw new Error('Gagal menambahkan resume');
-      }
-    }
-
-    return rowUser;
+    return rowCompany;
   } catch (error) {
-    console.log('error in create user service: ', error.message);
+    console.log('error in update user service: ', error.message);
     throw error;
   }
 };
 
 const deleteCompanyService = async (id) => {
   const company = await getUserByIdService(id);
-  return await Company.destroy({ where: { id: user.id } });
+  return await Company.destroy({ where: { id: company.id } });
 };
 
 const getJsonRowCompanyService = async (data) => {
