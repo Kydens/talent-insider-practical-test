@@ -1,0 +1,34 @@
+1. Q : What do you know about Microservices?
+   A : Microservices is an architecture that is built up of several small services that run individually but can still communicate with each other, and is known to be faster than monolith architecture.
+
+2. Q : Why Microservices?
+   A : In terms of scalability, Microservices can be run independently. If want to customise a feature, then only the service of that feature is done and not the entire application. Microservices can also be created with different programming languages so they are independent. In addition, because Microservices are small services, if a service feature is broken, it does not interfere with other service features.
+
+3. Q : What are the advantages and disadvantages of Microservices?
+   A : Advantages: 
+       1. Save resources. Because only certain services are customised, not the entire application.
+       2. Can be run independently without disturbing other services.
+       3. Code is only per-service so it is easy to maintain and test.
+       4. Can be combined with various tech stacks according to the needs of the services.
+
+       Disadvantages:
+       1. Inter-service architecture is quite complicated.
+       2. Need version management, CI/CD, and gateaway.
+       3. Communication between services and the network tends to be slower than monolith.
+       4. Data synchronisation is more difficult, because the database is separated according to the service.
+
+4. Q : Explain the difference between Glints & Jobstreet from your point of view as a Programmer (Front-end & Backend)?
+   A : Jobstreet:
+       1. Visually more attractive than Glints, colourful and interactive.
+       2. The information to be conveyed is clear.
+       3. The features provided are sufficiently highlighted so it is not confusing.
+       4. Job information is made modal so it doesn't always refresh the page or direct to another page.
+       5. The tech stack used is probably React.js and probably monolith.
+
+       Glints:
+       1. Visually directs to important information.
+       2. Too many text components so it's confusing where to go.
+       3. Job information index filter, very detailed, making it easier for users to select jobs.
+       4. Job information is made direct page, so it will take different times depending on the user's network.
+       5. The tech stack used is probably Next.js and may be Microservices.
+       6. Because it uses Next.js, page switching is not as long as usual because Next.js will cache pages that have been viewed.
