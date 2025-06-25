@@ -18,7 +18,7 @@ app.use(routes);
 // route default
 app.get('/', (req, res) => {
   res.json({
-    message: "Welcome to 'User Service' API!",
+    message: "Welcome to 'Company Service' API!",
     status: 'success',
     version: '1.0.0',
   });
@@ -57,5 +57,5 @@ app.use((err, req, res, next) => {
 
 const PORT = constants.PORT;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Service company is running on http://localhost:${PORT}`);
 });

@@ -59,5 +59,5 @@ app.use((err, req, res, next) => {
 
 const PORT = constants.PORT;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Service User is running on http://localhost:${PORT}`);
 });
