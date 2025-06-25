@@ -1,6 +1,6 @@
 // usersService.js
 const bcyrpt = require('bcrypt');
-const { Job, Company } = require('../models');
+const { Job, Company, UserJob } = require('../models');
 const pool = require('../../../../config/database');
 const constants = require('../../../../config/constants');
 const {
@@ -112,6 +112,123 @@ const deleteJobService = async (id) => {
   return await job.destroy({ where: { id: job.id } });
 };
 
+const applyJobService = async (req) => {
+  const userId = getUserIdFromToken(req);
+  const client = await pool.connect();
+  const row = req.body;
+  const now = new Date();
+
+  try {
+    await client.query('BEGIN');
+
+    const existingAppliedJobs = await UserJob.findOne({
+      where: { user_id: userId, job_id: row.jobId },
+    });
+
+    if (existingAppliedJobs) {
+      throw new Error('Anda sudah apply job tersebut.');
+    }
+
+    const queryDataUser = `
+      SELECT 
+        u.id AS userid,
+        r.id AS resumeid
+      FROM users u
+      JOIN resumes r ON u.id = r.user_id
+      WHERE u.id = $1 AND r.id = $2 AND u."isActive" = true
+      LIMIT 1
+    `;
+
+    const { rows } = await client.query(queryDataUser, [userId, row.resumeId]);
+
+    if (rows.length === 0) {
+      throw new Error('Anda belum upload resume.');
+    }
+
+    const checkJobExisted = await Job.findOne({ where: { id: row.jobId } });
+
+    if (!checkJobExisted) {
+      throw new Error('Job tersebut sedang tidak tersedia.');
+    }
+
+    const dataApply = {
+      user_id: userId,
+      resume_id: row.resumeId,
+      job_id: row.jobId,
+      created_at: now,
+    };
+
+    const applyJobs = await UserJob.create(dataApply);
+    await client.query('COMMIT');
+    return applyJobs;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.log('error in apply job service: ', error.message);
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+const updateApplyJobService = async (id, req) => {
+  const userId = getUserIdFromToken(req);
+  const client = await pool.connect();
+  const row = req.body;
+  const now = new Date();
+
+  try {
+    await client.query('BEGIN');
+    const queryDataUser = `
+      SELECT 
+        u.id AS userid,
+        r.id AS resumeid
+      FROM users u
+      JOIN resumes r ON u.id = r.user_id
+      WHERE u.id = $1 AND r.id = $2 AND u."isActive" = true
+      LIMIT 1
+    `;
+
+    const { rows } = await client.query(queryDataUser, [userId, row.resumeId]);
+
+    if (rows.length === 0) {
+      throw new Error('Resume anda tidak tersedia.');
+    }
+
+    const checkJobExisted = await Job.findOne({ where: { id: row.jobId } });
+
+    if (!checkJobExisted) {
+      throw new Error('Job tersebut sedang tidak tersedia.');
+    }
+
+    const dataApply = {
+      user_id: userId,
+      resume_id: row.resumeId,
+      job_id: row.jobId,
+      updated_at: now,
+    };
+
+    const checkApplyJob = await UserJob.findOne({ where: { id: id } });
+
+    if (!checkApplyJob) {
+      throw new Error('Anda belum apply ke job ini!');
+    }
+
+    const applyJobs = await UserJob.update(dataApply, {
+      where: { id: id },
+      returning: id,
+    });
+
+    await client.query('COMMIT');
+    return applyJobs;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.log('error in apply job service: ', error.message);
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 const getJsonRowJobService = async (data) => {
   const checkList = Array.isArray(data) ? 'array' : 'tunggal';
   const dataArray = Array.isArray(data) ? data : [data];
@@ -140,4 +257,6 @@ module.exports = {
   updateJobService,
   deleteJobService,
   getJsonRowJobService,
+  applyJobService,
+  updateApplyJobService,
 };

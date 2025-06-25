@@ -25,6 +25,8 @@ app.get('/', (req, res) => {
 });
 
 require('./module/companies/v1/models/company');
+require('./module/companies/v1/models/job');
+require('./module/companies/v1/models/userJob');
 
 const syncDatabase = async () => {
   try {

@@ -50,6 +50,9 @@ const createCompanyService = async (req) => {
 const getAllCompaniesService = async (req) => {
   const userId = getUserIdFromToken(req);
   const company = await Company.findAll({ where: { user_access: userId } });
+  if (company.length === 0) {
+    throw new Error('Anda tidak memiliki akses!');
+  }
   return company;
 };
 
@@ -72,7 +75,7 @@ const updateCompanyService = async (id, req) => {
     });
 
     if (!company) {
-      throw new Error('Anda tidak memiliki company.');
+      throw new Error('Anda tidak memiliki akses!');
     }
 
     const dataCompany = {

@@ -6,6 +6,8 @@ const {
   updateJobService,
   deleteJobService,
   getAllJobsService,
+  applyJobService,
+  updateApplyJobService,
 } = require('../services/jobServices');
 const { sendResponse } = require('../../../../utils/responseUtils');
 
@@ -85,10 +87,42 @@ const deleteJob = async (req, res) => {
   }
 };
 
+const applyJob = async (req, res) => {
+  try {
+    const applyJob = await applyJobService(req);
+    return sendResponse(
+      res,
+      200,
+      'success',
+      'Apply Job successfully',
+      applyJob
+    );
+  } catch (error) {
+    return sendResponse(res, 400, 'error', error.message);
+  }
+};
+
+const updateApplyJob = async (req, res) => {
+  try {
+    const applyJob = await updateApplyJobService(req.params.id, req);
+    return sendResponse(
+      res,
+      200,
+      'success',
+      'Apply Job updated successfully',
+      applyJob
+    );
+  } catch (error) {
+    return sendResponse(res, 400, 'error', error.message);
+  }
+};
+
 module.exports = {
   createJob,
   getAllJobs,
   getJobById,
   updateJob,
   deleteJob,
+  applyJob,
+  updateApplyJob,
 };

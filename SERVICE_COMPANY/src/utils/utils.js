@@ -50,19 +50,6 @@ const checkRoleAdminPermission = (req) => {
   return false;
 };
 
-const checkCompanyAccess = (req, decodedUserId) => {
-  console.log(req);
-  if (!req.user) {
-    throw new Error('User data not found in request!');
-  }
-
-  if (isNotEmpty(req.user.id) && req.user.id == decodedUserId) {
-    return true;
-  }
-
-  return false;
-};
-
 const getUserIdFromToken = (req) => {
   try {
     const authHeader = req.headers['authorization'];
@@ -88,6 +75,5 @@ module.exports = {
   getFormattedDate,
   convertArrayToSingleJson,
   checkRoleAdminPermission,
-  checkCompanyAccess,
   getUserIdFromToken,
 };

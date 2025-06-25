@@ -242,7 +242,7 @@ const getDataResumeByIdUserService = async (id) => {
 };
 
 const getAllUsersService = async () => {
-  const user = await Users.findAll();
+  const user = await Users.findAll({ where: { isActive: true } });
   return user;
 };
 
@@ -256,7 +256,7 @@ const getUsersService = async (
   endDate = null
 ) => {
   let query = `
-        SELECT id, first_name, last_name, email, "isActive", role, about, photo, created_at FROM users
+        SELECT id, first_name, last_name, email, "isActive", role, about, photo, created_at FROM users WHERE "isActive" = true
     `;
   const values = [];
 
@@ -292,7 +292,7 @@ const getTotalUsersService = async () => {
 };
 
 const getUserByIdService = async (id) => {
-  const user = await Users.findByPk(id);
+  const user = await Users.findByPk(id, { where: { isActive: true } });
   if (!user) {
     throw new Error('User not found');
   }
@@ -302,7 +302,6 @@ const getUserByIdService = async (id) => {
 const updateUserService = async (id, req) => {
   const now = new Date();
   const row = req.body;
-  console.log(row);
 
   try {
     const user = await getUserByIdService(id);
@@ -333,7 +332,7 @@ const updateUserService = async (id, req) => {
     }
 
     if (req.files && req.files.photo) {
-      dataUser.photo = `/uploads/avatars/${getFormattedDate('/')}/${
+      dataUser.photo = `/uploads/photo/${getFormattedDate('/')}/${
         req.files.photo[0].filename
       }`;
     }
@@ -343,9 +342,11 @@ const updateUserService = async (id, req) => {
 
     const resumeInserted = req.files.resumes;
     if (req.files && resumeInserted) {
-      const dataResume = resumeInserted.map((file) => ({
+      await Resumes.destroy({ where: { user_id: rowUser.id } });
+
+      const dataResume = req.files.resumes.map((file) => ({
         name: file.filename,
-        attachment: req.files.attachment?.[0]?.filename ?? null,
+        attachment: `/uploads/pdf/${getFormattedDate('/')}/${file.filename}`,
         user_id: rowUser.id,
         created_at: now,
       }));
@@ -353,7 +354,7 @@ const updateUserService = async (id, req) => {
       const inserted = await Resumes.bulkCreate(dataResume);
 
       if (!inserted || inserted.length === 0) {
-        throw new Error('Gagal menambahkan resume');
+        throw new Error('Gagal memperbarui resume');
       }
     }
 
