@@ -5,6 +5,8 @@ const { default: helmet } = require('helmet');
 const sequelize = require('./config/sequelize');
 const constants = require('./config/constants');
 
+const userSeeder = require('./module/users/v1/models/userSeeder');
+
 const app = express();
 const routes = require('./routes');
 
@@ -24,15 +26,15 @@ app.get('/', (req, res) => {
   });
 });
 
-require('./module/users/v1/models/usersLogs');
 require('./module/users/v1/models/resumes');
-require('./module/users/v1/models/usersCookies');
 require('./module/users/v1/models/users');
 require('./module/users/v1/models/usersActivation');
+require('./module/users/v1/models/usersLogs');
+require('./module/users/v1/models/usersCookies');
 
 const syncDatabase = async () => {
   try {
-    await sequelize.sync();
+    await sequelize.sync().then(userSeeder);
     console.log('Database Synchronized!');
   } catch (error) {
     console.log('Error Sync Database: ', error);

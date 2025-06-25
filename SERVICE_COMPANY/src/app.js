@@ -26,7 +26,10 @@ app.get('/', (req, res) => {
 
 require('./module/companies/v1/models/company');
 require('./module/companies/v1/models/job');
+require('./module/companies/v1/models/resumes');
 require('./module/companies/v1/models/userJob');
+require('./module/companies/v1/models/users');
+require('./module/companies/v1/models/usersCookies');
 
 const syncDatabase = async () => {
   try {
