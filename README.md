@@ -89,6 +89,12 @@ nodemon src/app.js
 - This implementation is scoped for interview purposes and can be improved with logging, validation layers, and error handling middleware.
 - Environment variables are required. You can refer to `.env.example` inside each service for guidance.
 - Some modifications were made, including the addition of userLogs, userCookies, and userActivation tables, along with several data type adjustments. These are based on the assumption that the admin will handle monitoring and access control features according to the roles.
+- Docker setup is not included in this submission because I currently do not have Docker installed on my machine, and due to time constraints, I was unable to configure it properly. All necessary environment variables are provided, and the application can be run with npm install and npm start for each service folder. All services have been developed and tested locally using Node.js and can be run manually with:
+
+  - User Service → http://localhost:5000
+  - Company Service → http://localhost:4000
+  - Gateway → http://localhost:3000
+
 - For testing the app, you can register a new account or can login as Admin with:
   - Email: admin@admin.com
   - Password: _secret123!@#_
