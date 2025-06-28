@@ -7,6 +7,8 @@ const UserLogs = require('../models/usersLogs');
 const { sendResponse } = require('../../../../utils/responseUtils');
 
 exports.login = async (req, res) => {
+  console.log('[🧠 LOGIN] Masuk ke controller login');
+  console.log('Body:', req.body);
   const { email, password } = req.body;
 
   try {

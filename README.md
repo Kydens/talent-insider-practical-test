@@ -37,26 +37,11 @@ Make sure you have:
 - PostgreSQL running locally
 - `.env` file properly configured in each service folder
 
-### Install dependencies for each service and start each service in a separate terminal:
+### Install dependencies for each service and start each service in a root folder terminal:
 
 ```bash
-# Terminal 1: User Service (Port 5000)
-cd SERVICE_USERS
-npm install
-nodemon src/app.js
-
-# Terminal 2: Company Service (Port 4000)
-cd SERVICE_COMPANY
-npm install
-nodemon src/app.js
-
-# Terminal 3: Gateway Service (Port 3000)
-cd SERVICE_GATEWAY
-npm install
-nodemon src/app.js
+npm run install:all
 ```
-
-> You can use basic `node src/app.js` as fallback if `nodemon` is not installed globally.
 
 ---
 
@@ -89,13 +74,14 @@ nodemon src/app.js
 - This implementation is scoped for interview purposes and can be improved with logging, validation layers, and error handling middleware.
 - Environment variables are required. You can refer to `.env.example` inside each service for guidance.
 - Some modifications were made, including the addition of userLogs, userCookies, and userActivation tables, along with several data type adjustments. These are based on the assumption that the admin will handle monitoring and access control features according to the roles.
-- Docker setup is not included in this submission because I currently do not have Docker installed on my machine, and due to time constraints, I was unable to configure it properly. All necessary environment variables are provided, and the application can be run with npm install and npm start for each service folder. All services have been developed and tested locally using Node.js and can be run manually with:
+- Docker setup is not included in this submission because I currently do not have Docker installed on my machine, and due to time constraints, I was unable to configure it properly. All necessary environment variables are provided, and the application can be run with Process Manager 2. You can start at root folder and do:
 
-  - User Service → http://localhost:5000
-  - Company Service → http://localhost:4000
-  - Gateway → http://localhost:3000
+```bash
+npm install
+pm2 start
+```
 
-- For testing the app, you can register a new account or can login as Admin with:
+- For login you can use as admin or you can register a new account or can login as Admin with:
   - Email: admin@admin.com
   - Password: _secret123!@#_
 

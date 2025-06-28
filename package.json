@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "concurrently": "^9.2.0",
+    "pm2": "^6.0.8"
+  },
+  "name": "practical-test",
+  "description": "This repository contains the implementation of a backend microservices system, built as part of the Talent Insider technical interview. The project includes:",
+  "version": "1.0.0",
+  "main": "ecosystem.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install:all": "concurrently \"cd SERVICE_COMPANY && npm install\" \"cd SERVICE_GATEWAY && npm install\" \"cd SERVICE_USERS && npm install\""
+  },
+  "keywords": [],
+  "author": "Eddy Nathansyah",
+  "license": "ISC"
+}
