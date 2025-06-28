@@ -40,6 +40,7 @@ Make sure you have:
 ### Install dependencies for each service and start each service in a root folder terminal:
 
 ```bash
+npm install
 npm run install:all
 ```
 
